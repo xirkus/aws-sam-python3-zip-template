@@ -1,0 +1,9 @@
+# NOTE:    Add your python dependencies here.
+# WARNING: If you are using any compiled python packages, the .zip method of deployment is _NOT RECOMMENDED_
+#          as there is a hard 50MB limit in the lambda package size that can be unpacked from an S3 bucket.
+#          In this case, use the docker deployment workflow.
+
+# Unversioned dependencies
+requests
+
+# Versioned dependencies

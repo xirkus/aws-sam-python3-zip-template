@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-app
+
+  Sample SAM Template for sam-app
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  # Replace with your $FunctionName
+  FunctionName:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: function/
+      Handler: app.lambda_handler # This is the name of the python method definition in app.py
+      Runtime: python3.7
+      Events:
+        # Replace with your $EventName
+        EventName:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /function
+            Method: get
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  FunctionNameApi:
+    Description: "API Gateway endpoint URL for Prod stage for FunctionName lambda"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/function/"
+  FunctionNameFunction:
+    Description: "FunctionName Lambda ARN"
+    Value: !GetAtt FunctionName.Arn
+  FunctionNameFunctionIamRole:
+    Description: "Implicit IAM Role created for FunctionName lambda"
+    Value: !GetAtt FunctionNameRole.Arn
