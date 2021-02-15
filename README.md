@@ -1,21 +1,45 @@
-# sam-app
+# sam-app-docker
+
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
-- function - Code for the application's Lambda function.
-- events - Invocation events that you can use to invoke the function.
-- tests - Unit tests for the application code. 
+- function - Code for the application's Lambda function and Project Dockerfile.
+- function/events - Invocation events that you can use to invoke the function.
+- function/tests - Unit tests for the application code. 
 - template.yaml - A template that defines the application's AWS resources.
 
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
-If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  
-The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started.
+## TL;DR
 
-* [PyCharm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [IntelliJ](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [VS Code](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/welcome.html)
-* [Visual Studio](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/welcome.html)
+You should install `aws-sam-cli` through your package manager and have Docker installed (and accessible). Run
+the following commands to verify these dependencies. These commands should _NOT_ return any errors:
+
+```
+% which sam
+% which docker
+% docker ps
+```
+
+You can read the original documentation below, but to get started quickly, run the following from the repo root:
+
+```
+% make init
+```
+
+To see additional commands, run:
+
+```
+% make
+```
+
+There are _two_ Makefiles:
+
+- The one in the project root configures/runs SAM
+- The one in the function root configures your python environment
+
+We assume that this repo is cloned as a starting project. If you need to add more functions, simply copy the 
+`function` directory and rename.
 
 ## Deploy the sample application
 
@@ -24,17 +48,19 @@ The Serverless Application Model Command Line Interface (SAM CLI) is an extensio
 To use the SAM CLI, you need the following tools.
 
 * SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* [Python 3 installed](https://www.python.org/downloads/)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
+
+You may need the following for local testing.
+* [Python 3 installed](https://www.python.org/downloads/)
 
 To build and deploy your application for the first time, run the following in your shell:
 
 ```bash
-sam build --use-container
+sam build
 sam deploy --guided
 ```
 
-The first command will build the source of your application. The second command will package and deploy your application to AWS, with a series of prompts:
+The first command will build a docker image from a Dockerfile and then copy the source of your application inside the Docker image. The second command will package and deploy your application to AWS, with a series of prompts:
 
 * **Stack Name**: The name of the stack to deploy to CloudFormation. This should be unique to your account and region, and a good starting point would be something matching your project name.
 * **AWS Region**: The AWS region you want to deploy your app to.
@@ -46,27 +72,27 @@ You can find your API Gateway Endpoint URL in the output values displayed after 
 
 ## Use the SAM CLI to build and test locally
 
-Build your application with the `sam build --use-container` command.
+Build your application with the `sam build` command.
 
 ```bash
-sam-app$ sam build --use-container
+sam-app-docker$ sam build
 ```
 
-The SAM CLI installs dependencies defined in `function/requirements.txt`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The SAM CLI builds a docker image from a Dockerfile and then installs dependencies defined in `function/requirements.txt` inside the docker image. The processed template file is saved in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
 Run functions locally and invoke them with the `sam local invoke` command.
 
 ```bash
-sam-app$ sam local invoke FunctionNameFunction --event events/event.json
+sam-app-docker$ sam local invoke FunctionNameFunction --event events/event.json
 ```
 
 The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
 
 ```bash
-sam-app$ sam local start-api
-sam-app$ curl http://localhost:3000/
+sam-app-docker$ sam local start-api
+sam-app-docker$ curl http://localhost:3000/
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
@@ -90,18 +116,18 @@ To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs`
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-sam-app$ sam logs -n FunctionNameFunction --stack-name sam-app --tail
+sam-app-docker$ sam logs -n FunctionNameFunction --stack-name sam-app-docker --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
 
 ## Unit tests
 
-Tests are defined in the `tests` folder in this project. Use PIP to install the [pytest](https://docs.pytest.org/en/latest/) and run unit tests.
+Tests are defined in the `tests` folder in this project. Use PIP to install the [pytest](https://docs.pytest.org/en/latest/) and run unit tests from your local machine.
 
 ```bash
-sam-app$ pip install pytest pytest-mock --user
-sam-app$ python -m pytest tests/ -v
+sam-app-docker$ pip install pytest pytest-mock --user
+sam-app-docker$ python -m pytest tests/ -v
 ```
 
 ## Cleanup
@@ -109,7 +135,7 @@ sam-app$ python -m pytest tests/ -v
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
 
 ```bash
-aws cloudformation delete-stack --stack-name sam-app
+aws cloudformation delete-stack --stack-name sam-app-docker
 ```
 
 ## Resources
